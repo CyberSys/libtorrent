@@ -167,6 +167,17 @@ int generate_key(char* filename)
 	unsigned char seed[32];
 	ed25519_create_seed(seed);
 
+#ifdef BOOST_NO_EXCEPTIONS
+    bool good_seed = false;
+    for (int i = 0; i < sizeof(seed) / sizeof(seed[0]) && !(good_seed = seed[i] != 0); ++i)
+        continue;
+    if (!good_seed)
+    {
+        fprintf(stderr, "failed to create seed.\n");
+        return 1;
+    }
+#endif
+
 	FILE* f = fopen(filename, "wb+");
 	if (f == NULL)
 	{

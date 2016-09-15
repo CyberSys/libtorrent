@@ -21,6 +21,10 @@ using namespace Microsoft::WRL;
 #include <stdio.h>
 #endif
 
+#ifdef BOOST_NO_EXCEPTIONS
+#include <cstring>
+#endif
+
 void ed25519_create_seed(unsigned char *seed) {
 #if TORRENT_USE_CRYPTOGRAPHIC_BUFFER
     IBuffer^ seedBuffer = CryptographicBuffer::GenerateRandom(32);
@@ -31,14 +35,22 @@ void ed25519_create_seed(unsigned char *seed) {
     HCRYPTPROV prov;
 
     if (!CryptAcquireContext(&prov, NULL, NULL, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT))  {
+#ifndef BOOST_NO_EXCEPTIONS
         throw boost::system::system_error(boost::system::error_code(GetLastError()
             , boost::system::system_category()));
+#else
+        memset(seed, 0, 32);
+#endif
     }
 
     if (!CryptGenRandom(prov, 32, seed))  {
         CryptReleaseContext(prov, 0);
+#ifndef BOOST_NO_EXCEPTIONS
         throw boost::system::system_error(boost::system::error_code(GetLastError()
             , boost::system::system_category()));
+#else
+        memset(seed, 0, 32);
+#endif
     }
 
     CryptReleaseContext(prov, 0);
@@ -46,13 +58,21 @@ void ed25519_create_seed(unsigned char *seed) {
     FILE *f = fopen("/dev/urandom", "rb");
 
     if (f == NULL) {
+#ifndef BOOST_NO_EXCEPTIONS
         throw boost::system::system_error(boost::system::error_code(errno, boost::system::system_category()));
+#else
+        memset(seed, 0, 32);
+#endif
     }
 
     int read = fread(seed, 1, 32, f);
     if (read != 32) {
         fclose(f);
+#ifndef BOOST_NO_EXCEPTIONS
         throw boost::system::system_error(boost::system::error_code(errno, boost::system::system_category()));
+#else
+        memset(seed, 0, 32);
+#endif
     }
 
     fclose(f);

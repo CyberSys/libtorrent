@@ -359,6 +359,7 @@ install(DIRECTORY include/libtorrent
 	DESTINATION include
 	PATTERN ".svn" EXCLUDE)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/libtorrent-rasterbar.pc DESTINATION ${LIBDIR}/pkgconfig)
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/cmake/FindLibTorrent.cmake DESTINATION share/cmake/Modules)
 
 # === set up examples directory as an independent project ===
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/examples)
